@@ -1,0 +1,49 @@
+{
+    "name": "suvera/winter-boot",
+    "description": "Winter Boot Framework",
+    "type": "library",
+    "keywords": [
+        "php8 framework",
+        "winter-boot",
+        "winterboot"
+    ],
+    "homepage": "https://suvera.github.io/",
+    "config": {
+        "platform": {
+            "php": "8.0"
+        },
+        "bin-dir": "bin"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Suvera"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/suvera/winter-boot/issues"
+    },
+    "bin": [
+        "build/phing/phing"
+    ],
+    "autoload": {
+        "psr-4": {
+            "dev\\winterframework\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "repositories": [
+    ],
+    "require": {
+        "ext-posix": "*",
+        "ext-pcntl": "*",
+        "symfony/yaml": "5.4.x-dev",
+        "monolog/monolog": "2.3.*",
+        "suvera/monolog-cascade": "dev-master",
+        "swoole/ide-helper": "@dev",
+        "lastguest/murmurhash": "2.1.*",
+        "ramsey/uuid": "4.2.*",
+        "promphp/prometheus_client_php": "v2.3.*",
+        "vanilla/garden-cli": "v3.1"
+    }
+}

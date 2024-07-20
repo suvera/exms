@@ -1,0 +1,27 @@
+{
+    "name": "suvera/exam-system",
+    "description": "Online Exam management system developed using Winter Boot",
+    "type": "project",
+    "homepage": "https://suvera.github.io/",
+    "config": {},
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Suvera"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "dev\\suvera\\exms\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "repositories": [],
+    "require": {
+        "php": ">=8.0.0",
+        "suvera/winter-boot": "dev-master",
+        "suvera/winter-doctrine": "dev-master",
+        "laminas/laminas-code": "4.15.x-dev",
+        "fakerphp/faker": "2.0.x-dev"
+    }
+}
