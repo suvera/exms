@@ -6,7 +6,6 @@ namespace dev\suvera\exms\student\rest;
 
 use dev\suvera\exms\student\data\QuestionAnswerForm;
 use dev\suvera\exms\student\service\ExamService;
-use dev\winterframework\exception\HttpRestException;
 use dev\winterframework\stereotype\Autowired;
 use dev\winterframework\stereotype\RestController;
 use dev\winterframework\stereotype\web\GetMapping;
@@ -15,7 +14,6 @@ use dev\winterframework\stereotype\web\PathVariable;
 use dev\winterframework\stereotype\web\PostMapping;
 use dev\winterframework\stereotype\web\RequestBody;
 use dev\winterframework\stereotype\web\RequestParam;
-use dev\winterframework\web\http\HttpStatus;
 use dev\winterframework\web\http\ResponseEntity;
 use dev\winterframework\web\MediaType;
 

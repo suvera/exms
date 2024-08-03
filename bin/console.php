@@ -2,6 +2,7 @@
 
 use dev\suvera\exms\data\entity\Admin;
 use dev\suvera\exms\utils\EntityGenerator;
+use dev\suvera\exms\utils\GeminiClient;
 use dev\winterframework\core\app\ApplicationReadyEvent;
 use dev\winterframework\core\app\WinterCliApplication;
 use dev\winterframework\core\context\ApplicationContext;
@@ -57,6 +58,11 @@ class ExampleApplication implements ApplicationReadyEvent {
             //$em->getConnection()->executeStatement('delete from sessions where session_expires < ?', [(new \DateTime('now'))->format('Y-m-d H:i:s')]);
             $em->getConnection()->delete('sessions', ['session_id' => '2']);
             echo PHP_EOL . 'Deleted expired sessions' . PHP_EOL;
+        } else if ($cmd === 'gemini') {
+            /** @var GeminiClient $gemini */
+            $gemini = $this->appCtx->beanByClass(GeminiClient::class);
+            $questions = $gemini->generateQuestions(3, ['9-CBSE', '9-SSE'], ['Maths'], ['Algebra'], []);
+            print_r($questions);
         } else {
             print PHP_EOL . 'Unknown command: ' . $cmd . PHP_EOL;
         }

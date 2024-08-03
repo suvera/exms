@@ -247,6 +247,7 @@ class ExamService {
         $paper = [
             'uuid' => $examPaper->uuid,
             'name' => $examPaper->name,
+            'subject_id' => $examPaper->subject->id,
             'subject_name' => $examPaper->subject->name,
             'start_time' => $studentExam->startTime->format('Y-m-d H:i:s'),
             'end_time' => $studentExam->endTime->format('Y-m-d H:i:s'),
