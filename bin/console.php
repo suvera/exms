@@ -61,7 +61,7 @@ class ExampleApplication implements ApplicationReadyEvent {
         } else if ($cmd === 'gemini') {
             /** @var GeminiClient $gemini */
             $gemini = $this->appCtx->beanByClass(GeminiClient::class);
-            $questions = $gemini->generateQuestions(3, ['9-CBSE', '9-SSE'], ['Maths'], ['Algebra'], []);
+            $questions = $gemini->generateQuestions(5, ['9-CBSE', '9-SSE'], ['Maths'], ['Algebra'], []);
             print_r($questions);
         } else {
             print PHP_EOL . 'Unknown command: ' . $cmd . PHP_EOL;

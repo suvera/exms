@@ -70,4 +70,9 @@ class Utility {
         $encrypted_data = openssl_encrypt($data, self::DEFAULT_CIPHER_METHOD, $key, OPENSSL_RAW_DATA, $iv);
         return base64_encode($salt . $encrypted_data);
     }
+
+    public static function headerRedirectAndExist(string $path): string {
+        header('Location: /exms' . $path);
+        exit;
+    }
 }

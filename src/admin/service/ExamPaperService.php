@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace dev\suvera\exms\admin\service;
 
 use dev\suvera\exms\admin\data\ExamPaperCreateForm;
+use dev\suvera\exms\admin\data\ExamPaperGenerationForm;
+use dev\suvera\exms\admin\data\ExamQuestionForm;
 use dev\suvera\exms\admin\data\ExamQuestionsForm;
 use dev\suvera\exms\data\ClassData;
 use dev\suvera\exms\data\entity\ExamPaper;
@@ -12,6 +14,7 @@ use dev\suvera\exms\data\entity\ExamPaperClass;
 use dev\suvera\exms\data\entity\ExamPaperQuestion;
 use dev\suvera\exms\data\entity\Subject;
 use dev\suvera\exms\data\ExamPaperStatus;
+use dev\suvera\exms\utils\GeminiClient;
 use dev\suvera\exms\utils\MyCollection;
 use dev\winterframework\exception\HttpRestException;
 use dev\winterframework\stereotype\Autowired;
@@ -26,6 +29,9 @@ class ExamPaperService {
 
     #[Autowired]
     private EntityManager $em;
+
+    #[Autowired]
+    private GeminiClient $gemini;
 
     public function create(ExamPaperCreateForm $form): ExamPaper {
         $examPaper = new ExamPaper();
@@ -153,6 +159,12 @@ class ExamPaperService {
         return $paginator;
     }
 
+    /**
+     *  Add questions to the exam paper
+     * 
+     * @param int $paperId
+     * @param ExamQuestionsForm $form
+     */
     public function addQuestions(int $paperId, ExamQuestionsForm $form): void {
         /** @var ExamPaper $examPaper */
         $examPaper = $this->em->getRepository(ExamPaper::class)->findOneById($paperId);
@@ -165,26 +177,35 @@ class ExamPaperService {
 
         $totalTimeSecs = 0;
         foreach ($form->questions as $question) {
-            $q = new ExamPaperQuestion();
-            $q->examPaperId = $paperId;
-            $q->examPaper = $examPaper;
-            $q->question = $question->question;
-            $q->timeSecs = $question->timeSeconds;
-            $q->answer = $question->answer;
-            $q->topic = $question->topic;
-            $q->explanation = $question->explanation;
-            $q->choiceA = $question->options->choiceA;
-            $q->choiceB = $question->options->choiceB;
-            $q->choiceC = $question->options->choiceC;
-            $q->choiceD = $question->options->choiceD;
-            $this->em->persist($q);
-
+            $this->addQuestion($examPaper, $question);
             $examPaper->totalQuestions++;
             $totalTimeSecs += $question->timeSeconds / 60;
         }
         $examPaper->totalTimeMins += ceil($totalTimeSecs / 60);
         $this->em->persist($examPaper);
         $this->em->flush();
+    }
+
+    public function addQuestion(ExamPaper $examPaper, ExamQuestionForm $question, bool $flush = false): ExamPaperQuestion {
+        $q = new ExamPaperQuestion();
+        $q->examPaperId = $examPaper->id;
+        $q->examPaper = $examPaper;
+        $q->question = $question->question;
+        $q->timeSecs = $question->timeSeconds;
+        $q->answer = $question->answer;
+        $q->topic = $question->topic;
+        $q->explanation = $question->explanation;
+        $q->choiceA = $question->options->choiceA;
+        $q->choiceB = $question->options->choiceB;
+        $q->choiceC = $question->options->choiceC;
+        $q->choiceD = $question->options->choiceD;
+        $this->em->persist($q);
+
+        if ($flush) {
+            $this->em->flush();
+        }
+
+        return $q;
     }
 
     public function getOneQuestion(int $paperId, int $id): ExamPaperQuestion {
@@ -287,5 +308,67 @@ class ExamPaperService {
         // }
 
         $this->em->flush();
+    }
+
+    public function generate(ExamPaperGenerationForm $form): ExamPaper {
+        $examPaper = new ExamPaper();
+
+        if ($this->em->getRepository(ExamPaper::class)->findOneByName($form->name) !== null) {
+            throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'ExamPaper already exists');
+        }
+
+        /** @var Subject $subject */
+        $subject = $this->em->getRepository(Subject::class)->findOneById($form->subjectId);
+        if ($subject === null) {
+            throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Invalid subject_id');
+        }
+
+        foreach ($form->classes as $class) {
+            if (!ClassData::hasClass($class)) {
+                throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Invalid class ' . htmlentities($class));
+            }
+        }
+
+        foreach ($form->topics as $topic) {
+            if (!is_string($topic) || strlen($topic) == 0) {
+                throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Invalid topic ' . htmlentities($topic));
+            }
+        }
+
+        if ($form->chapters) {
+            foreach ($form->chapters as $chapter) {
+                if (!is_string($chapter) || strlen($chapter) == 0) {
+                    throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Invalid chapter ' . htmlentities($chapter));
+                }
+            }
+        }
+
+        $response = $this->gemini->generateQuestions($form->total, $form->classes, [$subject->name], $form->topics, $form->chapters);
+
+        $examPaper->name = $form->name;
+        $examPaper->subjectId = $form->subjectId;
+        $examPaper->subject = $subject;
+
+        $this->em->persist($examPaper);
+
+        foreach ($form->classes as $class) {
+            $cls = new ExamPaperClass();
+            //$cls->examPaperId = $examPaper->id;
+            $cls->classId = $class;
+            $cls->examPaper = $examPaper;
+            $this->em->persist($cls);
+        }
+
+        $totalTimeSecs = 0;
+        foreach ($response->questions as $question) {
+            $this->addQuestion($examPaper, $question);
+            $examPaper->totalQuestions++;
+            $totalTimeSecs += $question->timeSeconds / 60;
+        }
+        $examPaper->totalTimeMins += ceil($totalTimeSecs / 60);
+        $this->em->persist($examPaper);
+
+        $this->em->flush();
+        return $examPaper;
     }
 }

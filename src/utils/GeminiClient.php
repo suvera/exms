@@ -2,6 +2,9 @@
 
 namespace dev\suvera\exms\utils;
 
+use dev\suvera\exms\admin\data\ExamQuestionsForm;
+use dev\winterframework\io\ObjectMapper;
+use dev\winterframework\reflection\ObjectCreator;
 use dev\winterframework\stereotype\Component;
 use dev\winterframework\stereotype\Value;
 use dev\winterframework\util\log\Wlf4p;
@@ -69,7 +72,7 @@ class Questions {
 class GeminiClient {
     use Wlf4p;
 
-    const BATCH_SIZE = 10;
+    const BATCH_SIZE = 20;
     private GeminiAi $gemini;
     private GenerativeModel $geminiModel;
 
@@ -88,10 +91,10 @@ in below topics:
 {CHAPTERS}
 ---
 Please add difficult & toughest questions. Please include answer with detailed explanation in the output.
-Please provide option key value in the "answer" field. Please do not repeat questions. Please use HTML tags to beatify the question and options to display them beatifully.
+Please provide option key value in the "answer" field. Please do not repeat questions. You should use HTML tags for code blocks.
 EOT;
 
-    private string $promptRepeatMore = 'Please generate {QUESTION_COUNT} more';
+    private string $promptRepeatMore = 'Please generate {QUESTION_COUNT} more distinct questions as per above instructions.';
 
     public function __construct() {
         $this->gemini = Gemini::factory()
@@ -113,14 +116,14 @@ EOT;
         $this->geminiModel->withGenerationConfig($config);
     }
 
-    public function generateQuestions(int $questionCount, array $classes, array $subjects, array $topics, array $chapters): array {
+    public function generateQuestions(int $questionCount, array $classes, array $subjects, array $topics, ?array $chapters = null): ExamQuestionsForm {
         $prompt = $this->promptInitial;
 
         $classString = "*" . implode("\n* ", $classes);
         $subjectString = "*" . implode("\n* ", $subjects);
         $topicString = "*" . implode("\n* ", $topics);
         $chapterString = '';
-        if (empty($chapters)) {
+        if (!empty($chapters)) {
             $chapterString = "\nin below chapters:\n*" . implode("\n* ", $chapters);
         }
 
@@ -131,20 +134,24 @@ EOT;
         );
 
         $finalJson = '';
-        $data = [];
+        $data = new ExamQuestionsForm();
         if ($questionCount > self::BATCH_SIZE) {
+            $prompt = str_replace('{QUESTION_COUNT}', self::BATCH_SIZE, $prompt);
             $chat = $this->geminiModel->startChat();
             do {
                 $response = $chat->sendMessage($prompt);
                 $code = $response->text();
                 $dataPart = $this->parseJson($code);
-                $data = array_merge($data, $dataPart);
+                if ($dataPart->questions) {
+                    $data->questions = array_merge($data->questions, $dataPart->questions);
+                }
                 $questionCount -= self::BATCH_SIZE;
                 $nextBatch = self::BATCH_SIZE;
                 if ($questionCount < self::BATCH_SIZE) {
                     $nextBatch = $questionCount;
                 }
                 $prompt = str_replace('{QUESTION_COUNT}', $nextBatch, $this->promptRepeatMore);
+                echo "Remaining Questions: $questionCount\n";
             } while ($questionCount > 0);
         } else {
             $prompt = str_replace('{QUESTION_COUNT}', $questionCount, $prompt);
@@ -155,23 +162,22 @@ EOT;
         return $data;
     }
 
-    protected function parseJson(string $jsonStr): array {
+    protected function parseJson(string $jsonStr): ExamQuestionsForm {
         //$jsonStr = preg_replace('/^\h*\/\/.*$/m', '', $jsonStr);
         //print_r($jsonStr);
         try {
             $json = json_decode($jsonStr, true, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $msg = 'Error in parsing JSON' . json_last_error_msg();
-                echo "$msg\n";
                 self::logError($msg, ['json' => $jsonStr]);
-                return [];
+                return new ExamQuestionsForm();
             }
-            return $json;
+            $obj = ObjectCreator::createObject(ExamQuestionsForm::class, $json);
+            return $obj;
         } catch (\Throwable $e) {
             $msg = 'Error in parsing JSON' . $e->getMessage();
-            echo "$msg\n";
             self::logError($msg, ['error' => $e]);
-            return [];
+            return new ExamQuestionsForm();
         }
     }
 }

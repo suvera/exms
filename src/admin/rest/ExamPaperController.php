@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace dev\suvera\exms\admin\rest;
 
 use dev\suvera\exms\admin\data\ExamPaperCreateForm;
+use dev\suvera\exms\admin\data\ExamPaperGenerationForm;
 use dev\suvera\exms\admin\service\ExamPaperService;
 use dev\winterframework\stereotype\Autowired;
 use dev\winterframework\stereotype\RestController;
@@ -31,6 +32,21 @@ class ExamPaperController extends AdminController {
         return ResponseEntity::ok(
             ResponseEntity::defaultBody([
                 'message' => 'ExamPaper created successfully',
+                'id' => $paper->id
+            ])
+        );
+    }
+
+    #[PostMapping(path: '/admin/exam_paper/generate', consumes: [MediaType::APPLICATION_JSON], produces: [MediaType::APPLICATION_JSON])]
+    public function generateExamPaper(
+        #[RequestBody] ExamPaperGenerationForm $form
+    ): ResponseEntity {
+        set_time_limit(0);
+
+        $paper = $this->service->generate($form);
+        return ResponseEntity::ok(
+            ResponseEntity::defaultBody([
+                'message' => 'ExamPaper generated successfully',
                 'id' => $paper->id
             ])
         );

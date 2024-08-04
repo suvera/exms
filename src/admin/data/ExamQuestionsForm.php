@@ -9,5 +9,5 @@ use dev\winterframework\stereotype\JsonProperty;
 class ExamQuestionsForm {
     /** @var ExamQuestionForm[] */
     #[JsonProperty(required: true, listClass: ExamQuestionForm::class)]
-    public array $questions;
+    public array $questions = [];
 }
