@@ -10,11 +10,9 @@ use dev\suvera\exms\adminui\view\LoginTemplate;
 use dev\winterframework\web\http\HttpRequest;
 use dev\suvera\exms\admin\service\AdminLoginService;
 use dev\suvera\exms\utils\Utility;
-use dev\winterframework\exception\HttpRestException;
 use dev\winterframework\stereotype\Autowired;
 use dev\winterframework\stereotype\web\PostMapping;
 use dev\winterframework\stereotype\web\RequestParam;
-use dev\winterframework\web\http\HttpStatus;
 
 #[RestController]
 class IndexController {
@@ -24,16 +22,26 @@ class IndexController {
     #[GetMapping(path: "/admin/login")]
     public function adminLogin(
         HttpRequest $request,
-        #[RequestParam(source: 'get')] string $error = ''
+        #[RequestParam(source: 'get', required: false)] string $error = ''
     ): View {
         if ($this->adminLoginService->sessionLogin($request)) {
             Utility::headerRedirectAndExist('/admin/home');
         }
 
+        $err = '';
+        switch ($error) {
+            case '1':
+                $err = 'Invalid username or password';
+                break;
+            case '2':
+                $err = 'Authentication required, Invalid session';
+                break;
+        }
+
         $tpl = new LoginTemplate([
             'request' => $request,
             'pageTitle' => 'Admin Login',
-            'error' => $error === '1' ? 'Invalid username or password' : ''
+            'error' => $err
         ]);
 
         return new HtmlTemplateView($tpl);
@@ -45,13 +53,17 @@ class IndexController {
         #[RequestParam(source: 'post')] string $username,
         #[RequestParam(source: 'post')] string $password
     ): void {
-        if ($this->adminLoginService->sessionLogin($request)) {
-            throw new HttpRestException(HttpStatus::$UNAUTHORIZED, 'Already logged in, Go to admin home.');
-        }
-
         if ($this->adminLoginService->loginInitSession($username, $password)) {
             Utility::headerRedirectAndExist('/admin/home');
         }
         Utility::headerRedirectAndExist('/admin/login?error=1');
+    }
+
+    #[GetMapping(path: "/admin/logout")]
+    public function doAdminLogout(
+        HttpRequest $request
+    ): void {
+        $this->adminLoginService->sessionLogout($request);
+        Utility::headerRedirectAndExist('/admin/login');
     }
 }

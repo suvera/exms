@@ -1,0 +1,83 @@
+<?php
+$menuItems = [
+    [
+        'title' => 'Home',
+        'url' => '/exms/admin/home',
+        'regex' => '/^\/exms\/admin\/home/',
+        'icon' => 'mdi mdi-home menu-icon',
+        'menu' => []
+    ],
+    [
+        'title' => 'Subjects',
+        'url' => '/exms/admin/ui/subject',
+        'regex' => '/^\/exms\/admin\/ui\/subject/',
+        'icon' => 'mdi mdi-book menu-icon',
+        'menu' => []
+    ],
+    [
+        'title' => 'Exam Papers',
+        'url' => '/exms/admin/ui/exam_paper',
+        'regex' => '/^\/exms\/admin\/ui\/exam_paper/',
+        'icon' => 'mdi mdi-gamepad menu-icon',
+        'menu' => []
+    ],
+    [
+        'title' => 'Questions',
+        'url' => '/exms/admin/ui/question',
+        'regex' => '/^\/exms\/admin\/ui\/question/',
+        'icon' => 'mdi mdi-chemical-weapon menu-icon',
+        'menu' => []
+    ],
+    [
+        'title' => 'Students',
+        'url' => '/exms/admin/ui/student',
+        'regex' => '/^\/exms\/admin\/ui\/student/',
+        'icon' => 'mdi mdi-school menu-icon',
+        'menu' => []
+    ]
+];
+?>
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <?php
+        foreach ($menuItems as $menuIdx => $menuItem) {
+            $active = preg_match($menuItem['regex'], $_SERVER['REQUEST_URI']) ? 'active' : '';
+            $showSubMenu = $active ? 'show' : '';
+            $collapsed = '';
+            $navItemAttrs = '';
+            $subMenuId = '';
+            if ($menuItem['menu']) {
+                $collapsed = $active ? '' : 'collapsed';
+                $subMenuId = 'sub-menu-' . $menuIdx;
+                $navItemAttrs = ' data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="' . $subMenuId . '"';
+            }
+            $collapsed = $active ? '' : 'collapsed';
+            echo '<li class="nav-item ' . $active . '">';
+            echo '<a class="nav-link ' . $collapsed . '" href="' . $menuItem['url'] . '">';
+            echo '<i class="' . $menuItem['icon'] . '"></i>';
+            echo '<span class="menu-title">' . $menuItem['title'] . '</span>';
+            if ($menuItem['menu']) {
+                echo '<i class="menu-arrow"></i>';
+            }
+            echo '</a>';
+            echo '</li>';
+            if ($menuItem['menu']) {
+                echo '<div class="collapse ' . $showSubMenu . '" id="' . $subMenuId . '">';
+                foreach ($menuItem['menu'] as $subMenuItem) {
+                    $active = preg_match($subMenuItem['regex'], $_SERVER['REQUEST_URI']) ? 'active' : '';
+                    echo '<ul class="nav flex-column sub-menu">';
+                    echo '<li class="nav-item"> <a class="nav-link" href="' . $subMenuItem['url'] . '">' . $subMenuItem['title'] . '</a></li>';
+                    echo '</ul>';
+                }
+                echo '</div>';
+            }
+        }
+        ?>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="mdi mdi-help-circle menu-icon"></i>
+                <span class="menu-title">Documentation</span>
+            </a>
+        </li>
+    </ul>
+</nav>

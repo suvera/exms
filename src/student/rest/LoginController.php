@@ -13,7 +13,7 @@ use dev\winterframework\web\http\HttpRequest;
 use dev\winterframework\web\http\ResponseEntity;
 
 #[RestController]
-class LoginController {
+class LoginController extends BaseController {
 
     #[Autowired()]
     public LoginService $loginService;

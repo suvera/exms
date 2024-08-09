@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\Id;
 
 #[Entity]
 #[Table(name: "admin")]
-class Admin {
+class Admin implements \JsonSerializable {
     use Data;
 
     #[Id]
@@ -37,5 +37,27 @@ class Admin {
     public function __construct() {
         $this->createdAt = new \DateTime('now');
         $this->updatedAt = new \DateTime('now');
+    }
+
+    public function jsonSerialize(): array {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'username' => $this->username
+        ];
+    }
+
+    public function __serialize(): array {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'username' => $this->username
+        ];
+    }
+
+    public function __unserialize(array $data): void {
+        $this->id = $data['id'];
+        $this->name = $data['name'];
+        $this->username = $data['username'];
     }
 }

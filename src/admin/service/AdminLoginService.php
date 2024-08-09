@@ -25,8 +25,19 @@ class AdminLoginService {
     #[Autowired]
     private EntityManager $em;
 
+    private Admin $admin;
+
     public function getEncryptKey(): string {
         return 'Feuxoph2Ue8ru8he';
+    }
+
+    public function getAdmin(): Admin {
+        if (isset($this->admin)) {
+            return $this->admin;
+        }
+        $this->admin = new Admin();
+        $this->admin->__unserialize($_SESSION['admin']);
+        return $this->admin;
     }
 
     protected function sessionStart(string $username): void {

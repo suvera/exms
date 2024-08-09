@@ -20,6 +20,9 @@ class ExamPaperGenerationForm {
     #[JsonProperty(required: true)]
     public array $topics = [];
 
+    #[JsonProperty(required: true, name: "api_token")]
+    public string $apiToken = '';
+
     #[JsonProperty(required: false)]
     public ?array $chapters = null;
 }

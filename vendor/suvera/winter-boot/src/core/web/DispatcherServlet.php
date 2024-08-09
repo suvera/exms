@@ -287,7 +287,7 @@ class DispatcherServlet implements HttpRequestDispatcher {
          */
         if ($controller instanceof ControllerInterceptor) {
             if (!$controller->preHandle($request, $response, $method->getDelegate())) {
-                $renderer->render($response, $request);
+                $renderer->renderAndExit($response, $request);
                 return;
             }
         }
