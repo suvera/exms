@@ -181,14 +181,14 @@ class ExamPaperService {
             $examPaper->totalQuestions++;
             $totalTimeSecs += $question->timeSeconds / 60;
         }
-        $examPaper->totalTimeMins += ceil($totalTimeSecs / 60);
+        $examPaper->totalTimeMins += intval(ceil($totalTimeSecs / 60));
         $this->em->persist($examPaper);
         $this->em->flush();
     }
 
     public function addQuestion(ExamPaper $examPaper, ExamQuestionForm $question, bool $flush = false): ExamPaperQuestion {
         $q = new ExamPaperQuestion();
-        $q->examPaperId = $examPaper->id;
+        //$q->examPaperId = $examPaper->id;
         $q->examPaper = $examPaper;
         $q->question = $question->question;
         $q->timeSecs = $question->timeSeconds;
@@ -241,7 +241,7 @@ class ExamPaperService {
         $this->em->remove($question);
 
         $examPaper->total_questions--;
-        $examPaper->total_time_mins -= ceil($question->timeSecs / 60);
+        $examPaper->total_time_mins -= intval(ceil($question->timeSecs / 60));
         $this->em->persist($examPaper);
 
         $this->em->flush();
@@ -365,7 +365,7 @@ class ExamPaperService {
             $examPaper->totalQuestions++;
             $totalTimeSecs += $question->timeSeconds / 60;
         }
-        $examPaper->totalTimeMins += ceil($totalTimeSecs / 60);
+        $examPaper->totalTimeMins += intval(1 + ceil($totalTimeSecs / 60));
         $this->em->persist($examPaper);
 
         $this->em->flush();

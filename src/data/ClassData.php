@@ -58,11 +58,27 @@ class ClassData {
         return self::$emptyArray;
     }
 
+    public static function getClassName(string $id): string {
+        if (isset(self::$data[$id])) {
+            return self::$data[$id]['name'];
+        }
+
+        return '';
+    }
+
     public static function hasClass(string $id): bool {
         return isset(self::$data[$id]);
     }
 
     public static function getClasses(): array {
         return self::$data;
+    }
+
+    public static function getClassIdNames(): array {
+        $data = [];
+        foreach (self::$data as $id => $class) {
+            $data[$id] = $class['name'];
+        }
+        return $data;
     }
 }

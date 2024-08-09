@@ -62,6 +62,10 @@ class SubjectService {
         return $subject;
     }
 
+    public function getAll(): array {
+        return $this->em->getRepository(Subject::class)->findAll();
+    }
+
     public function getList(int $offset, int $limit): Paginator {
 
         if ($offset < 0) {

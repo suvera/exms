@@ -1,7 +1,13 @@
-<div class="col-12 grid-margin stretch-card">
+<?php
+
+use dev\suvera\exms\utils\UiUtils;
+
+?><div class="col-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
             <h4 class="card-title">Generate Paper with AI</h4>
+            <div class="alert alert-danger" role="alert" id="error_div" style="display: none;">
+            </div>
             <form class="forms-sample" method="POST">
                 <div class="form-group row">
                     <label for="name" class="col-sm-2 col-form-label">Name</label>
@@ -13,7 +19,7 @@
                 <div class="form-group row">
                     <label for="name" class="col-sm-2 col-form-label">Total Questions</label>
                     <div class="col-sm-9">
-                        <input type="number" class="form-control" id="total" name="total" placeholder="Subject name" value="" min="1" max="100">
+                        <input type="number" class="form-control" id="total" name="total" placeholder="Total questions" value="5" min="1" max="100">
                     </div>
                     <div class="col-sm-1"></div>
                 </div>
@@ -21,9 +27,7 @@
                     <label for="subject_id" class="col-sm-2 col-form-label">Subject</label>
                     <div class="col-sm-9">
                         <select name="subject_id" id="subject_id" class="">
-                            <option value="1">Mustard</option>
-                            <option value="2">Ketchup</option>
-                            <option value="3">Barbecue</option>
+                            <?php echo UiUtils::selectOptions($subjects, ''); ?>
                         </select>
                     </div>
                     <div class="col-sm-1"></div>
@@ -31,11 +35,19 @@
                 <div class="form-group row">
                     <label for="classes" class="col-sm-2 col-form-label">Classes</label>
                     <div class="col-sm-9">
-                        <select name="classes[]" id="classes" class="" multiple>
-                            <option value="1">Mustard</option>
-                            <option value="2">Ketchup</option>
-                            <option value="3">Barbecue</option>
-                        </select>
+                        <div class="row">
+                            <?php
+                            $classes = $classes ?? [];
+                            foreach ($classes as $classId => $className) {
+                                echo '<div class="col-sm-2"><div class="form-check">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" name="classes" value="' . $classId . '">
+                                        ' . $className . '
+                                        <i class="input-helper"></i></label>
+                                </div></div>';
+                            }
+                            ?>
+                        </div>
                     </div>
                     <div class="col-sm-1"></div>
                 </div>
@@ -47,21 +59,83 @@
                     <div class="col-sm-1"></div>
                 </div>
                 <div class="form-group row">
-                    <label for="api_token" class="col-sm-2 col-form-label">API Token*</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control" id="api_token" name="api_token" placeholder="api token" value="" maxlength="512">
-                    </div>
-                    <div class="col-sm-1"></div>
-                </div>
-                <div class="form-group row">
                     <div class="col-sm-1">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-primary" onclick="submistForm();" id="submitBtn">Submit</button>
                     </div>
                     <div class="col-sm-1">
-                        <button class="btn btn-light">Cancel</button>
+                        <button type="button" class="btn btn-light">Cancel</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<script>
+    function submistForm() {
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+
+        var name = document.getElementById('name').value;
+        var total = document.getElementById('total').value;
+        var subject_id = $('#subject_id').val();
+        var classes = $('input:checkbox[name="classes"]:checked').map(function() {
+            return $(this).val();
+        }).get();
+        var topics = document.getElementById('topics').value;
+        var error_div = document.getElementById('error_div');
+        error_div.style.display = 'none';
+        var err = [];
+        if (name == '') {
+            err.push('Name is required');
+        }
+        if (total == '' || isNaN(total)) {
+            err.push('Total is required');
+        }
+        if (subject_id == '') {
+            err.push('Subject is required');
+        }
+        if (classes == null || classes.length == 0) {
+            err.push('Classes are required');
+        }
+        if (err != '') {
+            error_div.innerHTML = '<ul class="mb-0"><li>' + err.join("</li><li>") + '</li></ul>';
+            error_div.style.display = 'block';
+            btn.disabled = false;
+            return;
+        }
+        var data = {
+            name: name,
+            total: total,
+            subject_id: subject_id,
+            classes: classes,
+            topics: topics ? topics.split(',') : [],
+            api_token: 'test'
+        };
+        var url = '/exms/admin/exam_paper/generate';
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.status == 200) {
+                    window.location.href = '/exms/admin/ui/exam_paper/' + response.id;
+                    //alert('Paper generated successfully');
+                } else {
+                    error_div.innerHTML = 'Error: ' + response.error + '';
+                    error_div.style.display = 'block';
+                }
+            },
+            dataType: 'json',
+            contentType: 'application/json'
+        }).fail(function(jqXHR) {
+            error_div.innerHTML = 'Error while generating paper';
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                error_div.innerHTML = 'Error: ' + jqXHR.responseJSON.error + '';
+            }
+            error_div.style.display = 'block';
+
+        }).always(function() {
+            btn.disabled = false;
+        });
+    }
+</script>

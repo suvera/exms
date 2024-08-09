@@ -1,0 +1,87 @@
+<?php
+
+use dev\suvera\exms\data\ClassData;
+use dev\suvera\exms\data\entity\ExamPaper;
+
+$paper = $paper ?? new ExamPaper();
+$questions = $questions ?? [];
+?>
+<div class="col-md-12 grid-margin">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <h3 class="text-center"><?php echo $paper->name; ?></h3>
+                <h4 class="text-center" style="letter-spacing:0.1rem;"><?php echo $paper->subject->name; ?></h4>
+                <h4 class="text-center"><small class="text-muted" style="letter-spacing:0.1rem;">
+                        <?php
+                        $c = 0;
+                        foreach ($paper->classes as $class) {
+                            $c++;
+                            if ($c > 1) {
+                                echo ', ';
+                            }
+                            echo ClassData::getClassName($class->classId);
+                        }
+                        ?></small></h4>
+            </div>
+            <div class="row pt-2">
+                <div class="col-md-4">
+                    <h5 class="text-start"><small class="text-muted" style="letter-spacing:0.1rem;">Time Allowed:
+                            <?php echo $paper->totalTimeMins; ?> mins</small>
+                    </h5>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center">
+                        <small class="text-muted" style="letter-spacing:0.1rem;">Multiple choice questions</small>
+                    </h5>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-end">
+                        <small class="text-muted" style="letter-spacing:0.1rem;">Maximum Marks: <?php echo $paper->totalQuestions; ?></small>
+                    </h5>
+                </div>
+            </div>
+            <div class="row">
+                <hr />
+            </div>
+            <?php
+
+            $c = 0;
+            foreach ($questions as $question):
+                $c++;
+                $answers = [
+                    'a' => $question->choiceA,
+                    'b' => $question->choiceB,
+                    'c' => $question->choiceC,
+                    'd' => $question->choiceD
+                ];
+            ?>
+                <div class="row pb-3">
+                    <span class="question-idx"><?php echo $c; ?>.</span>
+                    <span class="col-md-auto question"><?php echo $question->question; ?></span>
+                </div>
+                <?php foreach ($answers as $ansKey => $ansVal): ?>
+                    <div class="row pb-3 ps-5">
+                        <span class="question-idx"><?php echo $ansKey; ?>.</span>
+                        <span class="col-md-auto answer"><?php echo $ansVal; ?></span>
+                    </div>
+                <?php endforeach; ?>
+                <div class="row pb-3" style="margin-top: -25px;">
+                    <span class="ps-3 text-end">
+                        <button type="button" class="btn btn-link btn-rounded btn-fw" data-bs-toggle="collapse"
+                            href="#explanation-<?php echo $question->id; ?>" role="button" aria-expanded="false"
+                            aria-controls="explanation-<?php echo $question->id; ?>">Show/Hide Explanation</button>
+                    </span>
+                </div>
+                <div class="row pb-3 ps-5 collapse" id="explanation-<?php echo $question->id; ?>">
+                    <span class="explanation">Answer:
+                        <?php echo $question->answer; ?>
+                        <br />
+                        <u>Explanation:</u> <br />
+                        <?php echo nl2br($question->explanation); ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>

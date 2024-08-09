@@ -18,18 +18,21 @@ abstract class AdminController implements ControllerInterceptor {
     public AdminLoginService $adminLoginService;
 
     public function preHandle(HttpRequest $request, ResponseEntity $response, ReflectionMethod $handler): bool {
-        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-            $response->withStatus(HttpStatus::$UNAUTHORIZED)
-                ->withHeader('WWW-Authenticate', 'Basic realm="Exms Admin"')
-                ->setBody($response->getUnauthorizedBody());
-            return false;
-        }
 
-        if (!$this->adminLoginService->verify($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
-            $response->withStatus(HttpStatus::$UNAUTHORIZED)
-                ->withHeader('WWW-Authenticate', 'Basic realm="Exms Admin"')
-                ->setBody($response->getUnauthorizedBody());
-            return false;
+        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+            if (!$this->adminLoginService->verify($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+                $response->withStatus(HttpStatus::$UNAUTHORIZED)
+                    ->withHeader('WWW-Authenticate', 'Basic realm="Exms Admin"')
+                    ->setBody($response->getUnauthorizedBody());
+                return false;
+            }
+        } else {
+            $admin = $this->adminLoginService->sessionLogin($request);
+            if (!$admin) {
+                $response->withStatus(HttpStatus::$UNAUTHORIZED)
+                    ->setBody($response->getUnauthorizedBody('Authentication required, Invalid session'));
+                return false;
+            }
         }
 
         return true;

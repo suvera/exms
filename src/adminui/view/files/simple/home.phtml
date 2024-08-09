@@ -1,6 +1,13 @@
-<div class="row">
-    <h2>Home</h2>
-
-    <h5>Hello: <?php echo isset($adminName) ? $adminName : ''; ?></h5>
-    <p>Your Home</p>
+<div class="col-md-12 grid-margin">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Home</h4>
+            <p class="card-description">
+                Hello: <?php echo isset($adminName) ? $adminName : ''; ?>
+            </p>
+            <div class="row">
+                <p>Your Home</p>
+            </div>
+        </div>
+    </div>
 </div>

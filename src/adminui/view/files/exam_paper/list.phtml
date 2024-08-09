@@ -1,3 +1,10 @@
+<?php
+
+use dev\suvera\exms\data\ClassData;
+use dev\suvera\exms\data\ExamPaperStatus;
+
+$papers = $papers ?? [];
+?>
 <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
@@ -31,46 +38,41 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="py-1">
-                                <img src="../../images/faces/face2.jpg" alt="image" />
-                            </td>
-                            <td>
-                                Messsy Adam
-                            </td>
-                            <td>
-                                <div class="progress">
-                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </td>
-                            <td>
-                                $245.30
-                            </td>
-                            <td>
-                                July 1, 2015
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td class="py-1">
-                                <img src="../../images/faces/face3.jpg" alt="image" />
-                            </td>
-                            <td>
-                                John Richards
-                            </td>
-                            <td>
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </td>
-                            <td>
-                                $138.00
-                            </td>
-                            <td>
-                                Apr 12, 2015
-                            </td>
-                            <td></td>
-                        </tr>
+                        <?php
+                        foreach ($papers as $paper):
+                        ?>
+                            <tr>
+                                <td>
+                                    <a href="/exms/admin/ui/exam_paper/<?php echo $paper->id; ?>"><?php echo $paper->name; ?></a>
+                                </td>
+                                <td>
+                                    <span class=" badge rounded-pill <?php echo $paper->status != ExamPaperStatus::PREPARING ? 'text-bg-success' : 'text-bg-warning'; ?>"><?php echo $paper->status->value; ?></span>
+                                </td>
+                                <td>
+                                    <?php echo $paper->subject->name; ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $c = 0;
+                                    foreach ($paper->classes as $class) {
+                                        $c++;
+                                        if ($c > 1) {
+                                            echo ', ';
+                                        }
+                                        echo ClassData::getClassName($class->classId);
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php echo $paper->totalQuestions; ?>
+                                </td>
+                                <td>
+                                    <?php echo $paper->createdAt->format('Y-m-d H:i:s'); ?>
+                                </td>
+                            </tr>
+                        <?php
+                        endforeach;
+                        ?>
                     </tbody>
                 </table>
             </div>
