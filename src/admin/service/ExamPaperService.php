@@ -34,6 +34,9 @@ class ExamPaperService {
     private GeminiClient $gemini;
 
     public function create(ExamPaperCreateForm $form): ExamPaper {
+        $this->em->getConnection()->executeQuery('SET SESSION wait_timeout = 28800');
+        $this->em->getConnection()->executeQuery('SET SESSION interactive_timeout = 28800');
+
         $examPaper = new ExamPaper();
 
         if ($this->em->getRepository(ExamPaper::class)->findOneByName($form->name) !== null) {
@@ -166,6 +169,9 @@ class ExamPaperService {
      * @param ExamQuestionsForm $form
      */
     public function addQuestions(int $paperId, ExamQuestionsForm $form): void {
+        $this->em->getConnection()->executeQuery('SET SESSION wait_timeout = 28800');
+        $this->em->getConnection()->executeQuery('SET SESSION interactive_timeout = 28800');
+
         /** @var ExamPaper $examPaper */
         $examPaper = $this->em->getRepository(ExamPaper::class)->findOneById($paperId);
         if ($examPaper === null) {
@@ -260,7 +266,7 @@ class ExamPaperService {
         return $paginator;
     }
 
-    #[Transactional()]
+    #[Transactional]
     public function freezePaper(int $paperId): void {
         /** @var ExamPaper $examPaper */
         $examPaper = $this->em->getRepository(ExamPaper::class)->findOneById($paperId);
@@ -311,6 +317,9 @@ class ExamPaperService {
     }
 
     public function generate(ExamPaperGenerationForm $form): ExamPaper {
+        $this->em->getConnection()->executeQuery('SET SESSION wait_timeout = 28800');
+        $this->em->getConnection()->executeQuery('SET SESSION interactive_timeout = 28800');
+
         $examPaper = new ExamPaper();
 
         if ($this->em->getRepository(ExamPaper::class)->findOneByName($form->name) !== null) {
