@@ -1,9 +1,6 @@
 <?php
 
-use dev\suvera\exms\data\ClassData;
-use dev\suvera\exms\data\ExamPaperStatus;
-
-$papers = $papers ?? [];
+$subjects = $subjects ?? [];
 $pageSize = $pageSize ?? 20;
 $pageNum = $pageNum ?? 0;
 $baseUrl = $_SERVER['REQUEST_URI'];
@@ -24,61 +21,39 @@ if (!str_contains($baseUrl, '?')) {
                                     <i class="mdi mdi-magnify"></i>
                                 </span>
                             </div>
-                            <input type="text" class="form-control" id="list_search" name="search" placeholder="Search by Name or Subject name" value="<?php echo isset($search) ? htmlentities($search) : ''; ?>" maxlength="255">
+                            <input type="text" class="form-control" id="list_search" name="search" placeholder="Search by Name" value="<?php echo isset($search) ? htmlentities($search) : ''; ?>" maxlength="255">
                         </div>
                     </form>
                 </div>
                 <div class="col-sm-3">
-                    <a href="/exms/admin/ui/exam_paper/generate" class="btn btn-info"><i class="mdi mdi-plus btn-icon-prepend"></i>Generate AI</a>
-                    <a href="button" class="btn btn-secondary"><i class="mdi mdi-plus btn-icon-prepend"></i>Create</a>
+                    <a href="/exms/admin/ui/subject/create" class="btn btn-info"><i class="mdi mdi-plus btn-icon-prepend"></i>Create</a>
                 </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover table-striped">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Name</th>
-                            <th>Status</th>
-                            <th>Subject</th>
-                            <th>Classes</th>
-                            <th>Total Questions</th>
                             <th>Created On</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        $paperCount = 0;
-                        foreach ($papers as $paper):
-                            $paperCount++;
+                        $subjectCount = 0;
+                        foreach ($subjects as $subject):
+                            $subjectCount++;
                         ?>
                             <tr>
                                 <td>
-                                    <a href="/exms/admin/ui/exam_paper/<?php echo $paper->id; ?>"><?php echo $paper->name; ?></a>
+                                    <?php echo $subject->id; ?>
                                 </td>
                                 <td>
-                                    <span class=" badge rounded-pill <?php echo $paper->status != ExamPaperStatus::PREPARING ? 'text-bg-success' : 'text-bg-warning'; ?>"><?php echo $paper->status->value; ?></span>
+                                    <?php echo $subject->name; ?>
                                 </td>
                                 <td>
-                                    <?php echo $paper->subject->name; ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    $c = 0;
-                                    foreach ($paper->classes as $class) {
-                                        $c++;
-                                        if ($c > 1) {
-                                            echo ', ';
-                                        }
-                                        echo ClassData::getClassName($class->classId);
-                                    }
-                                    ?>
-                                </td>
-                                <td>
-                                    <?php echo $paper->totalQuestions; ?>
-                                </td>
-                                <td>
-                                    <?php echo $paper->createdAt->format('Y-m-d H:i:s'); ?>
+                                    <?php echo $subject->createdAt->format('Y-m-d H:i:s'); ?>
                                 </td>
                                 <td>
                                     <div class="dropdown">
@@ -86,17 +61,8 @@ if (!str_contains($baseUrl, '?')) {
                                             <i class="mdi mdi-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="/exms/admin/ui/exam_paper/<?php echo $paper->id; ?>">
-                                                    <i class="mdi mdi-file-document"></i> View
-                                                </a></li>
-                                            <li><a class="dropdown-item" href="/exms/admin/ui/exam_paper/edit/<?php echo $paper->id; ?>">
+                                            <li><a class="dropdown-item" href="/exms/admin/ui/subject/edit/<?php echo $subject->id; ?>">
                                                     <i class="mdi mdi-pencil text-info"></i> Edit
-                                                </a></li>
-                                            <li><a class="dropdown-item" href="#">
-                                                    <i class="mdi mdi-plus text-success"></i> Add Question
-                                                </a></li>
-                                            <li><a class="dropdown-item" href="#">
-                                                    <i class="mdi mdi-delete text-danger"></i> Delete
                                                 </a></li>
                                         </ul>
                                     </div>
@@ -120,10 +86,10 @@ if (!str_contains($baseUrl, '?')) {
                         }
                         ?>
                         <li class="page-item disabled"><span class="page-link text-dark">Page <?php echo $pageNum + 1; ?>
-                                showing <?php echo $paperCount; ?> records
+                                showing <?php echo $subjectCount; ?> records
                             </span></li>
                         <?php
-                        if ($paperCount < $pageSize) {
+                        if ($subjectCount < $pageSize) {
                             echo '<li class="page-item disabled"><span class="page-link">Next</span></li>';
                         } else {
                             echo '<li class="page-item"><a class="page-link" href="' . $pageUrl . '&page=' . ($pageNum + 1) . '">Next</a></li>';

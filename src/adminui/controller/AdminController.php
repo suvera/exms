@@ -17,6 +17,7 @@ use dev\winterframework\web\view\HtmlTemplateView;
 use dev\winterframework\web\view\View;
 
 abstract class AdminController implements ControllerInterceptor {
+    public const PAGE_SIZE = 10;
 
     #[Autowired]
     public AdminLoginService $adminLoginService;

@@ -66,7 +66,7 @@ class SubjectService {
         return $this->em->getRepository(Subject::class)->findAll();
     }
 
-    public function getList(int $offset, int $limit): Paginator {
+    public function getList(int $offset, int $limit, string $search = ''): Paginator {
 
         if ($offset < 0) {
             throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Offset must be greater than zero');
@@ -76,12 +76,20 @@ class SubjectService {
             throw new HttpRestException(HttpStatus::$BAD_REQUEST, 'Limit must be greater than zero');
         }
 
-        $dql = "SELECT c FROM dev\\suvera\\exms\\data\\entity\\Subject c ORDER BY c.id ASC";
+        $dql = "SELECT c FROM dev\\suvera\\exms\\data\\entity\\Subject c ";
+        if (!empty($search)) {
+            $dql .= " WHERE c.name LIKE :search ";
+        }
+        $dql .=  ' ORDER BY c.id DESC';
 
         $query = $this->em->createQuery($dql)
             ->setHint(Paginator::HINT_ENABLE_DISTINCT, false)
             ->setFirstResult($offset)
             ->setMaxResults($limit);
+
+        if (!empty($search)) {
+            $query->setParameter('search', '%' . addcslashes($search, '%_') . '%');
+        }
 
         $paginator = new Paginator($query, fetchJoinCollection: false);
         return $paginator;

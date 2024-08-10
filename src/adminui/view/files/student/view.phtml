@@ -1,0 +1,71 @@
+<?php
+
+use dev\suvera\exms\data\ClassData;
+use dev\suvera\exms\data\entity\Student;
+
+$student = $student ?? new Student();
+$questions = $questions ?? [];
+?>
+<div class="col-md-12 grid-margin">
+    <div class="">
+        <a href="/exms/admin/ui/student/edit/<?php echo $student->id; ?>" class="btn btn-primary">Edit</a>
+    </div>
+    <div class=" card">
+        <div class="card-body">
+            <div class="row">
+                <h4>Student: <?php echo $student->name; ?></h4>
+            </div>
+            <div class="row ps-4 pt-3">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <tbody>
+                            <tr>
+                                <th class="col-md-2">Name</th>
+                                <td><?php echo $student->name; ?></td>
+                            </tr>
+                            <tr>
+                                <th>Username</th>
+                                <td><?php echo $student->username; ?></td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td><?php echo $student->email; ?></td>
+                            </tr>
+                            <tr>
+                                <th>Classes</th>
+                                <td>
+                                    <?php
+                                    $c = 0;
+                                    foreach ($student->classes as $class) {
+                                        $c++;
+                                        if ($c > 1) {
+                                            echo ', ';
+                                        }
+                                        echo ClassData::getClassName($class->classId);
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Last Login</th>
+                                <td><?php echo $student->lastLogin?->format('Y-m-d H:i:s'); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Failed Attempts</th>
+                                <td><?php echo $student->failedAttempts; ?></td>
+                            </tr>
+                            <tr>
+                                <th>Created On</th>
+                                <td><?php echo $student->createdAt->format('Y-m-d H:i:s'); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Updated On</th>
+                                <td><?php echo $student->updatedAt->format('Y-m-d H:i:s'); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

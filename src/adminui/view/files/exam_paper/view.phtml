@@ -7,7 +7,12 @@ $paper = $paper ?? new ExamPaper();
 $questions = $questions ?? [];
 ?>
 <div class="col-md-12 grid-margin">
-    <div class="card">
+    <div class="">
+        <a href="/exms/admin/ui/exam_paper/edit/<?php echo $paper->id; ?>" class="btn btn-primary">Edit</a>
+
+        <a href="/exms/admin/ui/exam_paper/delete/<?php echo $paper->id; ?>" class="btn btn-danger">Delete</a>
+    </div>
+    <div class=" card">
         <div class="card-body">
             <div class="row">
                 <h3 class="text-center"><?php echo $paper->name; ?></h3>

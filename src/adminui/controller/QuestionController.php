@@ -22,4 +22,9 @@ class QuestionController extends AdminController {
 
         return new HtmlTemplateView($tpl);
     }
+
+    #[GetMapping(path: "/admin/ui/question")]
+    public function list(): View {
+        return $this->errorPage('WORK IN PROGRESS - I am working on it currently');
+    }
 }

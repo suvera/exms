@@ -51,16 +51,16 @@ class ExamService {
             's.name as subject_name',
             'e.total_questions',
             'e.total_time_mins',
-            'c.class_id',
+            "(select GROUP_CONCAT(c.class_id SEPARATOR ',') from exam_paper_class c where e.id = c.exam_paper_id group by c.exam_paper_id) as class_id",
             'e.updated_at',
         ];
         $qb = $this->em->getConnection()->createQueryBuilder();
         $qb->select(...$columnsCount)
             ->from('exam_paper', 'e')
-            ->innerJoin('e', 'exam_paper_class', 'c', 'e.id = c.exam_paper_id')
             ->innerJoin('e', 'subject', 's', 'e.subject_id = s.id')
             ->where('e.status = :status')->setParameter('status', ExamPaperStatus::FREEZED->value)
-            ->andWhere('c.class_id in ( :classes )')->setParameter('classes', $studentClassIds, ArrayParameterType::STRING)
+            ->andWhere('e.id in (select c.exam_paper_id from exam_paper_class c where e.id = c.exam_paper_id and c.class_id in ( :classes ))')
+            ->setParameter('classes', $studentClassIds, ArrayParameterType::STRING)
             ->andWhere('e.id not in (select exam_paper_id from student_exam where student_id = :student )')
             ->setParameter('student', $this->studentCtx->getStudentId())
             ->orderBy('e.updated_at', 'DESC');

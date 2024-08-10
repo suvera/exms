@@ -6,18 +6,12 @@ namespace dev\suvera\exms\admin\data;
 
 use dev\winterframework\stereotype\JsonProperty;
 
-class StudentCreateForm {
+class StudentUpdateForm {
     #[JsonProperty(required: true, validate: [['len', 'max' => 64]])]
     public string $name;
 
-    #[JsonProperty(required: true, validate: ['username', ['len', 'max' => 64]])]
-    public string $username;
-
     #[JsonProperty(required: true, validate: ['email', ['len', 'max' => 128]])]
     public string $email;
-
-    #[JsonProperty(required: false, validate: ['password', ['len', 'min' => 8, 'max' => 24]])]
-    public string $password = '';
 
     #[JsonProperty(required: true)]
     public array $classes = [];

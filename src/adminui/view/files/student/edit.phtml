@@ -1,47 +1,52 @@
 <?php
 
-use dev\suvera\exms\utils\UiUtils;
+use dev\suvera\exms\data\entity\Student;
 
+$student = $student ?? new Student();
 ?><div class="col-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Generate Paper with AI</h4>
+            <h4 class="card-title">Student: <?php echo isset($student->name) ? $student->name : 'Create'; ?></h4>
             <div class="alert alert-danger" role="alert" id="error_div" style="display: none;">
             </div>
             <form class="forms-sample" method="POST">
                 <div class="form-group row">
-                    <label for="name" class="col-sm-2 col-form-label">Name</label>
+                    <label for="name" class="col-sm-2 col-form-label">Name*</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Name" value="" maxlength="255">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Name" value="<?php echo htmlentities($student->name ?? ''); ?>" maxlength="255">
                     </div>
                     <div class="col-sm-1"></div>
                 </div>
                 <div class="form-group row">
-                    <label for="name" class="col-sm-2 col-form-label">Total Questions</label>
+                    <label for="name" class="col-sm-2 col-form-label">Username*</label>
                     <div class="col-sm-9">
-                        <input type="number" class="form-control" id="total" name="total" placeholder="Total questions" value="5" min="1" max="100">
+                        <?php echo htmlentities($student->username ?? ''); ?>
                     </div>
                     <div class="col-sm-1"></div>
                 </div>
                 <div class="form-group row">
-                    <label for="subject_id" class="col-sm-2 col-form-label">Subject</label>
+                    <label for="name" class="col-sm-2 col-form-label">Email*</label>
                     <div class="col-sm-9">
-                        <select name="subject_id" id="subject_id" class="">
-                            <?php echo UiUtils::selectOptions($subjects, ''); ?>
-                        </select>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email address" value="<?php echo htmlentities($student->email ?? ''); ?>" maxlength="255">
                     </div>
                     <div class="col-sm-1"></div>
                 </div>
                 <div class="form-group row">
-                    <label for="classes" class="col-sm-2 col-form-label">Classes</label>
+                    <label for="classes" class="col-sm-2 col-form-label">Classes*</label>
                     <div class="col-sm-9">
                         <div class="row">
                             <?php
                             $classes = $classes ?? [];
                             foreach ($classes as $classId => $className) {
+                                $checked = '';
+                                foreach ($student->classes as $class) {
+                                    if ($class->classId == $classId) {
+                                        $checked = 'checked';
+                                    }
+                                }
                                 echo '<div class="col-sm-2"><div class="form-check">
                                     <label class="form-check-label">
-                                        <input type="checkbox" class="form-check-input" name="classes" value="' . $classId . '">
+                                        <input type="checkbox" class="form-check-input" name="classes" value="' . $classId . '" ' . $checked . '>
                                         ' . $className . '
                                         <i class="input-helper"></i></label>
                                 </div></div>';
@@ -52,47 +57,61 @@ use dev\suvera\exms\utils\UiUtils;
                     <div class="col-sm-1"></div>
                 </div>
                 <div class="form-group row">
-                    <label for="topics" class="col-sm-2 col-form-label">Topics</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control" id="topics" name="topics" placeholder="Comma seperated list of values" value="" maxlength="1024">
-                    </div>
-                    <div class="col-sm-1"></div>
-                </div>
-                <div class="form-group row">
                     <div class="col-sm-1">
                         <button type="button" class="btn btn-primary" onclick="submitForm();" id="submitBtn">Submit</button>
                     </div>
                     <div class="col-sm-1">
-                        <a href="/exms/admin/ui/exam_paper" class="btn btn-light">Cancel</a>
+                        <a href="/exms/admin/ui/student" class="btn btn-light">Cancel</a>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalTitle">Student created successfully</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="hideCredsModal();">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre id="creds_code">
+Username: a
+Password: b
+                </pre>
+                <div style="display:none;" class="text-success" id="copy_success_msg">Copied to clipboard</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="hideCredsModal();">Close</button>
+                <button type="button" class="btn btn-primary" onclick="performCopyCreds()">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     function submitForm() {
         var btn = document.getElementById('submitBtn');
+        var copyText = document.getElementById("creds_code");
         btn.disabled = true;
 
         var name = document.getElementById('name').value;
-        var total = document.getElementById('total').value;
-        var subject_id = $('#subject_id').val();
         var classes = $('input:checkbox[name="classes"]:checked').map(function() {
             return $(this).val();
         }).get();
-        var topics = document.getElementById('topics').value;
+        var email = document.getElementById('email').value;
         var error_div = document.getElementById('error_div');
         error_div.style.display = 'none';
         var err = [];
         if (name == '') {
             err.push('Name is required');
         }
-        if (total == '' || isNaN(total)) {
-            err.push('Total is required');
-        }
-        if (subject_id == '') {
-            err.push('Subject is required');
+        if (email == '') {
+            err.push('Email is required');
         }
         if (classes == null || classes.length == 0) {
             err.push('Classes are required');
@@ -105,21 +124,17 @@ use dev\suvera\exms\utils\UiUtils;
         }
         var data = {
             name: name,
-            total: total,
-            subject_id: subject_id,
-            classes: classes,
-            topics: topics ? topics.split(',') : [],
-            api_token: 'test'
+            email: email,
+            classes: classes
         };
-        var url = '/exms/admin/exam_paper/generate';
+        var url = '/exms/admin/student/<?php echo $student->id; ?>';
         $.ajax({
-            type: "POST",
+            type: "PATCH",
             url: url,
             data: JSON.stringify(data),
             success: function(response) {
                 if (response.status == 200) {
-                    window.location.href = '/exms/admin/ui/exam_paper/' + response.id;
-                    //alert('Paper generated successfully');
+                    window.location.href = '/exms/admin/ui/student/<?php echo $student->id; ?>';
                 } else {
                     error_div.innerHTML = 'Error: ' + response.error + '';
                     error_div.style.display = 'block';
@@ -128,7 +143,7 @@ use dev\suvera\exms\utils\UiUtils;
             dataType: 'json',
             contentType: 'application/json'
         }).fail(function(jqXHR) {
-            error_div.innerHTML = 'Error while generating paper';
+            error_div.innerHTML = 'Error while generating student';
             if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                 error_div.innerHTML = 'Error: ' + jqXHR.responseJSON.error + '';
             }

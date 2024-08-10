@@ -47,10 +47,10 @@ class Student implements \JsonSerializable {
     public ?\DateTime $lastLogin;
 
     #[OneToMany(targetEntity: StudentClass::class, mappedBy: 'student')]
-    public Collection $students;
+    public Collection $classes;
 
     public function __construct() {
-        $this->students = new ArrayCollection();
+        $this->classes = new ArrayCollection();
         $this->createdAt = new \DateTime('now');
         $this->updatedAt = new \DateTime('now');
     }

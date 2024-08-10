@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace dev\suvera\exms\admin\data;
 
+use dev\suvera\exms\data\ExamPaperStatus;
 use dev\winterframework\stereotype\JsonProperty;
 
 class ExamPaperCreateForm {
@@ -13,6 +14,12 @@ class ExamPaperCreateForm {
     #[JsonProperty(name: "subject_id", required: true, validate: [['int', 'min' => 1]])]
     public int $subjectId;
 
-    #[JsonProperty(required: false)]
-    public ?array $classes = null;
+    #[JsonProperty(required: true)]
+    public array $classes = [];
+
+    #[JsonProperty(required: true, name: "exam_time", validate: [['int', 'min' => 1]])]
+    public int $totalTimeMins = 0;
+
+    #[JsonProperty(required: true, validate: [['oneOf', 'values' => ['preparing', 'freezed']]])]
+    public string $status;
 }
